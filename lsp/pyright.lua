@@ -14,21 +14,6 @@ local function set_python_path(path)
 	end
 end
 
-vim.api.nvim_create_autocmd("LspAttach", {
-	group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
-	callback = function(args)
-		local client = vim.lsp.get_client_by_id(args.data.client_id)
-		if client == nil then
-			return
-		end
-		if client.name == "ruff" then
-			-- Disable hover in favor of Pyright
-			client.server_capabilities.hoverProvider = false
-		end
-	end,
-	desc = "LSP: Disable hover capability from Ruff",
-})
-
 return {
 	cmd = { "pyright-langserver", "--stdio" },
 	filetypes = { "python" },
@@ -43,18 +28,18 @@ return {
 	},
 	settings = {
 		pyright = {
-			disableOrganizeImports = true,
+			disablOrganizeImports = true,
 		},
 		python = {
 			analysis = {
+				ignore = { "*" },
 				autoSearchPaths = true,
 				useLibraryCodeForTypes = true,
 				diagnosticMode = "openFilesOnly",
-				ignore = { "*" },
 			},
 		},
 	},
-	on_attach = function(client, bufnr)
+	on_attach = function(_, bufnr)
 		vim.api.nvim_buf_create_user_command(bufnr, "LspPyrightSetPythonPath", set_python_path, {
 			desc = "Reconfigure pyright with the provided python path",
 			nargs = 1,
