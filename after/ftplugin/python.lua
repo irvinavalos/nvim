@@ -1,0 +1,8 @@
+vim.schedule(function()
+	if not vim.lsp.get_clients({ name = "pyright", bufnr = 0 })[1] then
+		vim.lsp.enable("pyright")
+	end
+	if not vim.lsp.get_clients({ name = "ruff", bufnr = 0 })[1] then
+		vim.lsp.enable("ruff")
+	end
+end)
