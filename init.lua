@@ -1,13 +1,50 @@
 vim.loader.enable()
 
--- Disable external providers
+---@diagnostic disable: undefined-field
+---@diagnostic disable: undefined-doc-name
+
+-- LSP
+vim.lsp.enable({ "lua_ls", "clangd", "pyright", "ruff" })
+
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
+vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
+
+-- General
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_node_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 
+vim.opt.wrap = false
+vim.opt.sidescrolloff = 8
+vim.opt.scrolloff = 8
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.clipboard = "unnamedplus"
+vim.opt.showcmd = false
+vim.opt.writebackup = false
+vim.opt.swapfile = false
+
+-- Tabs/Indentation
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+
+-- Searching
+vim.opt.smartcase = true
+vim.opt.ignorecase = true
+
+-- Visuals
+vim.opt.termguicolors = true
+vim.opt.winborder = "rounded"
+vim.opt.signcolumn = "yes"
+vim.opt.showmatch = true
+vim.opt.showmode = false
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
----@diagnostic disable-next-line: undefined-field
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
@@ -23,68 +60,74 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
-
--- General
-vim.opt.wrap = false
-vim.opt.sidescrolloff = 8
-vim.opt.scrolloff = 8
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.showcmd = false
-
--- Tabs/Indentation
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.smartindent = true
-
--- Searching
-vim.opt.smartcase = true
-vim.opt.ignorecase = true
-
--- Visuals
-vim.opt.termguicolors = true
-vim.opt.winborder = "single"
-vim.opt.signcolumn = "yes"
-vim.opt.showmatch = true
-
--- Files
-vim.opt.writebackup = false
-vim.opt.swapfile = false
-
--- LSP
--- vim.lsp.enable({ "texlab", "html", "cssls", "ts_ls" })
-
--- "grn" is mapped in Normal mode to |vim.lsp.buf.rename()|
--- "gra" is mapped in Normal and Visual mode to |vim.lsp.buf.code_action()|
--- "grr" is mapped in Normal mode to |vim.lsp.buf.references()|
--- "gri" is mapped in Normal mode to |vim.lsp.buf.implementation()|
--- "grt" is mapped in Normal mode to |vim.lsp.buf.type_definition()|
--- "gO" is mapped in Normal mode to |vim.lsp.buf.document_symbol()|
--- - CTRL-S is mapped in Insert mode to |vim.lsp.buf.signature_help()|
-
-vim.api.nvim_create_autocmd("LspAttach", {
-	once = true,
-	callback = function()
-		vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
-		vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
-	end,
-})
-
 require("lazy").setup({
-	defaults = { lazy = true },
+	defaults = { lazy = false },
 	spec = {
-		{ "webhooked/kanso.nvim", priority = 1000 },
-		{ "nvim-treesitter/nvim-treesitter", branch = "master", lazy = false, build = ":TSUpdate" },
-		{ "nvim-mini/mini.nvim", version = false, event = "VeryLazy" },
-		{ "saghen/blink.cmp", version = "1.*", event = "InsertEnter" },
+		{ "webhooked/kanso.nvim" },
+		{
+			"nvim-treesitter/nvim-treesitter",
+			lazy = false,
+			-- ft = { "html", "css", "javascript", "typescript", "tsx" },
+			branch = "master",
+			build = ":TSUpdate",
+			opts = {
+				auto_install = false,
+				highlight = {
+					enable = true,
+					disable = function(_, buf)
+						local max = 100 * 1024
+						local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+						return ok and stats and stats.size > max
+					end,
+				},
+			},
+			config = function(_, opts)
+				require("nvim-treesitter.configs").setup(opts)
+			end,
+		},
+		{
+			"nvim-mini/mini.nvim",
+			-- version = false,
+			-- lazy = true,
+			event = "VeryLazy",
+			config = function()
+				require("mini.surround").setup()
+				require("mini.ai").setup()
+			end,
+		},
+		{
+			"ibhagwan/fzf-lua",
+			event = "VeryLazy",
+			cmd = "FzfLua",
+			keys = {
+				{ "<leader>.", "<Cmd>FzfLua files<CR>", desc = "Find files" },
+				{ "<leader>,", "<Cmd>FzfLua buffers<CR>", desc = "Find buffers" },
+				{ "<leader>/", "<Cmd>FzfLua grep<CR>", desc = "Grep" },
+			},
+			opts = { winopts = { preview = { hidden = "hidden" } } },
+		},
+		{
+			"saghen/blink.cmp",
+			event = "InsertEnter",
+			opts = {
+				completion = {
+					menu = { border = "rounded" },
+					documentation = { window = { border = "rounded" } },
+				},
+				sources = { default = { "lsp", "path", "snippets" } },
+			},
+		},
 		{
 			"stevearc/conform.nvim",
-			event = { "BufWritePre" },
-			cmd = { "ConformInfo" },
+			keys = {
+				{
+					"<leader>ff",
+					function()
+						require("conform").format({ async = true })
+					end,
+					desc = "Format Buffer",
+				},
+			},
 			---@module "conform"
 			---@type conform.setupOpts
 			opts = {
@@ -93,29 +136,35 @@ require("lazy").setup({
 					python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
 					c = { "clang-format" },
 					cpp = { "clang-format" },
-					html = { "prettier" },
-					css = { "prettier" },
-					javascript = { "prettier" },
 					latex = { "tex-fmt" },
 				},
-				default_format_opts = { lsp_format = "fallback" },
-				formatters = { shfmt = { append_args = { "-i", "2" } } },
 			},
 		},
 		{
 			"mfussenegger/nvim-lint",
-			event = "BufWritePost",
-			config = function()
-				require("lint").linters_by_ft = {
+			event = { "InsertLeave" },
+			opts = {
+				linters_by_ft = {
 					python = { "ruff" },
 					c = { "clangtidy" },
 					cpp = { "clangtidy" },
 					html = { "eslint" },
 					css = { "eslint" },
-				}
-				vim.api.nvim_create_autocmd("BufWritePost", {
+				},
+				linters = {},
+			},
+			config = function(_, opts)
+				local lint = require("lint")
+				lint.linters_by_ft = opts.linters_by_ft
+				if opts.linters then
+					for name, l in pairs(opts.linters) do
+						lint.linters[name] = vim.tbl_deep_extend("force", lint.linters[name] or {}, l)
+					end
+				end
+
+				vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost" }, {
 					callback = function()
-						require("lint").try_lint()
+						lint.try_lint()
 					end,
 				})
 			end,
@@ -123,49 +172,21 @@ require("lazy").setup({
 	},
 	ui = { border = "rounded" },
 	change_detection = { notify = false },
-	performance = { rtp = { disabled_plugins = {
-		"gzip",
-		"tutor",
-		"tarPlugin",
-		"zipPlugin",
-		"tohtml",
-	} } },
+	performance = {
+		rtp = {
+			disabled_plugins = {
+				"gzip",
+				"tutor",
+				"tarPlugin",
+				"zipPlugin",
+				"tohtml",
+				"matchparen",
+			},
+		},
+	},
 })
 
 vim.cmd.colorscheme("kanso-zen")
-
-vim.api.nvim_create_autocmd("InsertEnter", {
-	once = true,
-	callback = function()
-		require("blink.cmp").setup({
-			completion = {
-				menu = { border = "rounded" },
-				documentation = { window = { border = "rounded" } },
-			},
-			sources = { default = { "lsp", "path", "snippets" } },
-			snippets = { preset = "mini_snippets" },
-			signature = { enabled = true },
-		})
-	end,
-})
-
--- Appearance/Visuals
-require("mini.snippets").setup()
-require("mini.icons").setup()
-require("mini.hipatterns").setup()
-
--- Text
-require("mini.surround").setup()
-require("mini.ai").setup()
-
--- Workflow
-require("mini.git").setup()
-require("mini.diff").setup()
-require("mini.pick").setup()
-require("mini.statusline").setup()
-
--- Treesitter
-
 
 -- Centered navigation
 vim.keymap.set("n", "n", "nzzzv", { desc = "Center next search result", silent = true })
@@ -186,13 +207,3 @@ vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down",
 vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up", silent = true })
 vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
 vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
-
--- Formatting
-vim.keymap.set("n", "<leader>ff", function()
-	require("conform").format({ async = true })
-end, { desc = "Format file" })
-
--- Pickers
-vim.keymap.set("n", "<leader>.", "<Cmd>lua MiniPick.builtin.files()<CR>", { desc = "Files", silent = true })
-vim.keymap.set("n", "<leader>,", "<Cmd>lua MiniPick.builtin.buffers()<CR>", { desc = "Buffers", silent = true })
-vim.keymap.set("n", "<leader>/", "<Cmd>lua MiniPick.builtin.grep()<CR>", { desc = "Grep", silent = true })
