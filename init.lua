@@ -1,3 +1,5 @@
+vim.loader.enable()
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -14,195 +16,201 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.loaded_node_provider = 0
-vim.g.loaded_python3_provider = 0
-vim.g.loaded_perl_provider = 0
-
-vim.g.mapleader = " "
+vim.g.mapleader = " " -- Defaults
 vim.g.maplocalleader = "\\"
+vim.g.loaded_node_provider = 0 -- Disable providers
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
 
-local opt = vim.o
-local key = vim.keymap.set
+vim.opt.ignorecase = true -- Turn on ignorecase
+vim.opt.smartcase = true -- Turn on smartcase
+vim.opt.scrolloff = 10 -- Number of lines to keep below and above cursor (scrolloff)
+vim.opt.nu = true -- Turn on line numbers
+vim.opt.relativenumber = true -- Turn on relative line numbers
+vim.opt.wrap = false -- Turn off text wrapping
+vim.opt.termguicolors = true -- Enable terminal colors
+vim.opt.splitbelow = true -- Split window below the current one
+vim.opt.splitright = true -- Vertical split window to the right of the current one
+vim.opt.showcmd = false -- Turn off show command in the last line of screen
+vim.opt.clipboard = "unnamedplus" -- Use clipboard register + quoteplus
+vim.opt.undofile = true -- Save undo history to an undo file @ $XDG_STATE_HOME/nvim/undo
+vim.opt.softtabstop = 2 -- Tab settings
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.smartindent = true -- 'Smart' indent?
+vim.opt.swapfile = false -- Turn off swapfile
+vim.opt.updatetime = 50 -- Set updatime time
+vim.opt.signcolumn = "yes" -- Always have sign column enabled
+vim.opt.guicursor = "" -- Disable cursor styling
+vim.opt.winborder = "rounded" -- Rounded window borders
+vim.opt.hlsearch = false -- Disable search highlighting
 
--- Basic Settings
+vim.keymap.set("n", "n", "nzzzv", { desc = "Center next search result" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Center previous search result" })
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Center half page down" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Center half page up" })
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down", silent = true })
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up", silent = true })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line selection down", silent = true })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line selection up", silent = true })
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
 
-opt.number = true
-opt.relativenumber = true
-opt.wrap = false
-opt.scrolloff = 10
-opt.sidescrolloff = 8
+vim.lsp.enable({ "lua_ls", "pyright", "ruff", "clangd", "texlab", "html", "cssls", "ts_ls" })
 
--- Indentation
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
+vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
 
-opt.tabstop = 2
-opt.shiftwidth = 2
-opt.softtabstop = 2
-opt.expandtab = true
-opt.smartindent = true
-opt.autoindent = true
+local lsp_log_group = vim.api.nvim_create_augroup("PythonLspDebug", { clear = true })
 
--- Search Settings
-
-opt.ignorecase = true
-opt.smartcase = true
--- opt.hlsearch = false
-opt.incsearch = true
-
--- Visual Settings
-
-opt.winborder = "rounded"
-opt.cursorline = true
-opt.signcolumn = "yes"
-opt.statuscolumn = " %s %l %r "
-opt.showmatch = true
-opt.termguicolors = true
-opt.guicursor = "n-c-v:block-nCursor"
-opt.cmdheight = 0
-
--- File Settings
-
-opt.backup = false
-opt.writebackup = false
-opt.swapfile = false
-opt.undofile = false
-opt.updatetime = 300
-opt.autoread = true
-opt.autowrite = false
-opt.fileencoding = "utf8"
-
--- Behavior Settings
-
-opt.mouse = "a"
-opt.clipboard = "unnamedplus"
-
--- Centered Screen Jumps
-
-key("n", "n", "nzzzv", { desc = "Next search result (centered)" })
-key("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
-key("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
-key("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
-
--- Buffer Navigation
-
-key("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height", silent = true })
-key("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height", silent = true })
-key("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width", silent = true })
-key("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width", silent = true })
-
--- Line Movement
-
-key("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down", silent = true })
-key("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up", silent = true })
-key("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line selection down", silent = true })
-key("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line selection up", silent = true })
-
--- Visual Mode Indentation
-
-key("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
-key("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
-
--- Quick Config Edit
-
-key("n", "<leader>ec", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit Config", silent = true })
-
--- LSP
-
-vim.lsp.enable({ "lua_ls", "pyright", "ruff", "texlab", "html", "cssls", "clangd", "tinymist", "ts_ls" })
-
-key("n", "<leader>li", ":checkhealth vim.lsp<CR>", { desc = "LSP Info", silent = true })
-
-vim.diagnostic.config({
-	virtual_text = false,
-	update_in_insert = false,
-	signs = {
-		text = {
-			[vim.diagnostic.severity.ERROR] = "",
-			[vim.diagnostic.severity.WARN] = "",
-			[vim.diagnostic.severity.INFO] = "",
-			[vim.diagnostic.severity.HINT] = "",
-		},
-	},
+vim.api.nvim_create_autocmd({ "FileType" }, {
+	group = lsp_log_group,
+	pattern = "*",
+	callback = function(args)
+		if args.match ~= "python" then
+			vim.lsp.set_log_level("warn") -- Switch LSP log level to WARN for non python files
+		else
+			vim.lsp.set_log_level("debug") -- Switch LSP log level to DEBUG for python files
+		end
+	end,
 })
 
 require("lazy").setup({
 	spec = {
-		{ "webhooked/kanso.nvim", lazy = false, priority = 1000, config = true, opts = { transparent = false } },
-		{ "echasnovski/mini.nvim", version = false },
-		{ "chomosuke/typst-preview.nvim", ft = "typst", version = "1.*", opts = {} },
-		-- { "andweeb/presence.nvim", event = "VeryLazy" },
+		{ "webhooked/kanso.nvim", lazy = false, priority = 1000, opts = { transparent = true } },
+		{
+			"nvim-mini/mini.ai",
+			version = false,
+			event = "VeryLazy",
+			opts = {},
+		},
+		{
+			"nvim-mini/mini.surround",
+			version = false,
+			event = "VeryLazy",
+			opts = {},
+		},
+		{
+			"nvim-mini/mini.snippets",
+			version = false,
+			event = "VeryLazy",
+			opts = {},
+		},
+		{
+			"ibhagwan/fzf-lua",
+			cmd = { "FzfLua" },
+			keys = {
+				{
+					"<leader>.",
+					function()
+						require("fzf-lua").files()
+					end,
+					desc = "Files",
+				},
+				{
+					"<leader>,",
+					function()
+						require("fzf-lua").buffers()
+					end,
+					desc = "Buffers",
+				},
+				{
+					"<leader>/",
+					function()
+						require("fzf-lua").grep()
+					end,
+					desc = "Grep",
+				},
+				{
+					"<leader>fd",
+					function()
+						require("fzf-lua").lsp_document_diagnostics()
+					end,
+					desc = "File diagnostics",
+				},
+			},
+			opts = {
+				winopts = { preview = { hidden = true } },
+				oldfiles = { cwd_only = true, include_current_session = true },
+				defaults = { file_icons = false },
+			},
+		},
+		{
+			"folke/lazydev.nvim",
+			ft = { "lua" },
+			opts = {
+				library = {
+					{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
+				},
+			},
+		},
 		{
 			"saghen/blink.cmp",
 			version = "1.*",
-			---@module 'blink.cmp'
-			---@type blink.cmp.Config
+			event = { "InsertEnter" },
 			opts = {
-				snippets = { preset = "mini_snippets" },
-				keymap = { preset = "default" },
-				appearance = {
-					nerd_font_variant = "mono",
+                snippets = { preset = "mini_snippets" },
+				signature = { enabled = true },
+				completion = {
+					menu = { border = "rounded" },
+					documentation = { window = { border = "rounded" } },
+					ghost_text = { enabled = false },
 				},
-				completion = { documentation = { auto_show = false } },
 				sources = {
-					default = { "lsp", "path", "snippets", "buffer" },
+					default = { "lsp", "path", "snippets", "lazydev" },
+					providers = {
+						lazydev = {
+							name = "LazyDev",
+							module = "lazydev.integrations.blink",
+							score_offset = 100,
+						},
+					},
 				},
-				fuzzy = { implementation = "prefer_rust_with_warning" },
 			},
-			opts_extend = { "sources.default" },
 		},
 		{
 			"stevearc/conform.nvim",
+			event = { "BufWritePre" },
 			cmd = { "ConformInfo" },
 			keys = {
 				{
 					"<leader>ff",
 					function()
-						require("conform").format({ async = true })
+						require("conform").format({ timeout_ms = 500, lsp_format = "fallback" })
 					end,
-					mode = "",
-					desc = "Format File",
+					desc = "Format buffer",
 				},
 			},
-			---@module "conform"
-			---@type conform.setupOpts
 			opts = {
 				formatters_by_ft = {
 					lua = { "stylua" },
 					python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
 					c = { "clang-format" },
 					cpp = { "clang-format" },
-					html = { "prettier" },
-					css = { "prettier" },
-					javascript = { "prettier" },
-					typst = { "typstyle" },
-					latex = { "tex-fmt" },
-				},
-				default_format_opts = {
-					lsp_format = "fallback",
-				},
-				formatters = {
-					shfmt = {
-						prepend_args = { "-i", "2" },
-					},
+					tex = { "tex-fmt" },
 				},
 			},
-			init = function()
-				vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
-			end,
 		},
 		{
 			"mfussenegger/nvim-lint",
-			events = { "BufWritePost", "BufReadPost", "InsertLeave" },
+			event = { "BufReadPost", "BufNewFile" },
 			config = function()
-				require("lint").linters_by_ft = {
+				local lint = require("lint")
+				lint.linters_by_ft = {
 					python = { "ruff" },
 					c = { "clangtidy" },
 					cpp = { "clangtidy" },
-					html = { "eslint" },
-					css = { "eslint" },
 				}
-				vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+
+				local lint_group = vim.api.nvim_create_augroup("lint", { clear = true })
+
+				vim.api.nvim_create_autocmd({ "BufWritePost", "TextChanged" }, {
+					group = lint_group,
 					callback = function()
-						require("lint").try_lint()
+						if vim.bo.modifiable then
+							lint.try_lint()
+						end
 					end,
 				})
 			end,
@@ -210,136 +218,77 @@ require("lazy").setup({
 		{
 			"nvim-treesitter/nvim-treesitter",
 			branch = "master",
-			lazy = false,
 			build = ":TSUpdate",
+			lazy = false,
 			config = function()
+				---@diagnostic disable: missing-fields
 				require("nvim-treesitter.configs").setup({
-					ensure_installed = {
-						"c",
-						"lua",
-						"vim",
-						"vimdoc",
-						"query",
-						"markdown",
-						"markdown_inline",
-						-- Personal
-						"latex",
-						"typst",
-						"bash",
-						"regex",
-						"cpp",
-						"python",
-						"html",
-						"css",
-						"javascript",
-						"typescript",
-					},
-					ignore_install = {},
-					sync_install = false,
+					ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python" },
 					auto_install = false,
-					modules = {},
-					highlight = {
-						enable = true,
-						disable = function(_, buf)
-							local max_filesize = 100 * 1024 -- 100 KB
-							local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-							if ok and stats and stats.size > max_filesize then
-								return true
-							end
-						end,
-						additional_vim_regex_highlighting = false,
+					ignore_install = { "latex" },
+					highlight = { enable = true },
+				})
+			end,
+		},
+		{
+			"lervag/vimtex",
+			init = function()
+				vim.g.tex_flavor = "latex"
+				vim.g.vimtex_view_general_viewer = "zathura"
+				vim.g.vimtex_compiler_latexmk = {
+					options = {
+						"-auxdir=build",
 					},
-				})
+				}
+				vim.g.vimtex_compiler_latexmk_engines = { _ = "-lualatex" }
 			end,
 		},
 		{
-			"folke/noice.nvim",
-			dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify" },
-			event = "VeryLazy",
-			opts = {},
-		},
-		{
-			"catgoose/nvim-colorizer.lua",
-			lazy = true,
-			cmd = { "ColorizerToggle", "ColorizerAttachToBuffer", "ColorizerReloadAllBuffers" },
-			opts = {},
-		},
-		{
-			"windwp/nvim-ts-autotag",
-			ft = { "jsx", "html" },
+			"L3MON4D3/LuaSnip",
+			ft = { "tex" },
+			version = "v2.*",
 			config = function()
-				require("nvim-ts-autotag").setup({
-					opts = { enable_close = true, enable_rename = true, enable_close_on_slash = false },
+				local ls = require("luasnip")
+
+				ls.config.set_config({
+					history = false,
+					enable_autosnippets = true,
+					-- store_selection_keys = "<Tab>",
 				})
+
+				-- vim.cmd([[
+				--                 imap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
+				--                 smap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
+				--             ]])
+
+				vim.keymap.set(
+					"",
+					"<leader>sr",
+					"<Cmd>lua require('luasnip.loaders.from_lua').lazy_load({paths = '~/.config/nvim/LuaSnip/'})<CR><Cmd>echo 'Snippets reloaded'<CR>",
+					{ desc = "Reloaded snippets" }
+				)
+
+				_G.s = ls.snippet
+				_G.sn = ls.snippet_node
+				_G.t = ls.text_node
+				_G.i = ls.insert_node
+				_G.f = ls.function_node
+				_G.d = ls.dynamic_node
+				_G.fmt = require("luasnip.extras.fmt").fmt
+				_G.fmta = require("luasnip.extras.fmt").fmta
+				_G.rep = require("luasnip.extras").rep
+
+				---@diagnostic disable: assign-type-mismatch
+				require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/LuaSnip/" })
 			end,
 		},
-		-- {
-		-- 	"rachartier/tiny-inline-diagnostic.nvim",
-		-- 	event = "VeryLazy",
-		-- 	priority = 1000,
-		-- 	config = function()
-		-- 		require("tiny-inline-diagnostic").setup({ preset = "minimal" })
-		-- 	end,
-		-- },
 	},
-	ui = { border = "rounded", size = { width = 0.7, height = 0.7 } },
-	install = { colorscheme = { "kanso" } },
+	ui = { border = "rounded" },
 	checker = { enabled = false },
-	change_detection = { notify = false },
 })
 
 vim.cmd.colorscheme("kanso-zen")
 
-require("mini.snippets").setup()
-require("mini.icons").setup()
--- require("mini.statusline").setup()
-require("mini.diff").setup()
-require("mini.pick").setup()
-require("mini.extra").setup()
-require("mini.surround").setup()
-require("mini.ai").setup()
--- require("mini.pairs").setup()
-
-key("n", "<leader>.", ":Pick files<CR>", { desc = "Find Files", silent = true })
-key("n", "<leader>,", ":Pick buffers<CR>", { desc = "Open Buffers", silent = true })
-key("n", "<leader>/", ":Pick grep_live<CR>", { desc = "Live Grep", silent = true })
-key("n", "<leader>xx", ":Pick diagnostic<CR>", { desc = "Show Diagnostics", silent = true })
-
-key("n", "<leader>cc", ":ColorizerToggle<CR>", { desc = "Toggle Colorizer", silent = true })
-
-require("notify").setup({
-	background_colour = "#000000",
-})
-
--- require("noice").setup({
--- 	lsp = {
--- 		override = {
--- 			["vim.lsp.util.convert_input_to_markdown_lines"] = true,
--- 			["vim.lsp.util.stylize_markdown"] = true,
--- 		},
--- 	},
--- 	presets = {
--- 		bottom_search = true,
--- 		command_palette = true,
--- 		long_message_to_split = true,
--- 		inc_rename = false,
--- 		lsp_doc_border = true,
--- 	},
--- })
-
-vim.keymap.set("n", "<leader>tw", function()
-	vim.cmd("w")
-	local file = vim.fn.expand("%:p")
-	local cwd = vim.fn.expand("%:p:h")
-
-	local id = vim.fn.jobstart(
-		{ "typst", "watch", file },
-		{ cwd = cwd, stdout = "null", stderr = "null", detach = true }
-	)
-
-	if id > 0 then
-		vim.notify("Typst watch started (PID " .. id .. ")")
-	else
-		vim.notify("Failed to start typst watch", vim.log.levels.ERROR)
-	end
-end, { desc = "Typst Watch File (detached job)" })
+if true then
+    print("Hello")
+end
