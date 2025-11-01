@@ -94,16 +94,16 @@ require("lazy").setup({
 				typeStype = { bold = true },
 			},
 		},
-		-- { "nvim-mini/mini.statusline", version = "*", event = "VeryLazy", opts = {} },
+		{ "nvim-mini/mini.statusline", version = "*", event = "VeryLazy", opts = {} },
 		{ "nvim-mini/mini.diff", version = false, event = "VeryLazy", opts = {} },
-		-- {
-		-- 	"nvim-mini/mini-git",
-		-- 	version = false,
-		-- 	event = "VeryLazy",
-		-- 	config = function()
-		-- 		require("mini.git").setup()
-		-- 	end,
-		-- },
+		{
+			"nvim-mini/mini-git",
+			version = false,
+			event = "VeryLazy",
+			config = function()
+				require("mini.git").setup()
+			end,
+		},
 		{ "nvim-mini/mini.ai", version = false, event = "VeryLazy", opts = {} },
 		{ "nvim-mini/mini.surround", version = false, event = "VeryLazy", opts = {} },
 		{
@@ -162,9 +162,12 @@ require("lazy").setup({
 					"zathurarc",
 					-- Languages
 					"python",
+					"lua",
 					-- Web
 					"html",
 					"css",
+					"javascript",
+					"jsx",
 					"typescript",
 					"tsx",
 					-- Data formats
