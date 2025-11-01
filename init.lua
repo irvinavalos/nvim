@@ -16,51 +16,36 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader = " " -- Defaults
+vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
-vim.g.loaded_node_provider = 0 -- Disable providers
+vim.g.loaded_node_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0
 
-vim.opt.ignorecase = true -- Turn on ignorecase
-vim.opt.smartcase = true -- Turn on smartcase
-vim.opt.scrolloff = 10 -- Number of lines to keep below and above cursor (scrolloff)
-vim.opt.nu = true -- Turn on line numbers
-vim.opt.relativenumber = true -- Turn on relative line numbers
-vim.opt.wrap = false -- Turn off text wrapping
-vim.opt.termguicolors = true -- Enable terminal colors
-vim.opt.splitbelow = true -- Split window below the current one
-vim.opt.splitright = true -- Vertical split window to the right of the current one
-vim.opt.showcmd = false -- Turn off show command in the last line of screen
-vim.opt.clipboard = "unnamedplus" -- Use clipboard register + quoteplus
-vim.opt.undofile = true -- Save undo history to an undo file @ $XDG_STATE_HOME/nvim/undo
-vim.opt.softtabstop = 2 -- Tab settings
-vim.opt.shiftwidth = 2
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.scrolloff = 12
+vim.opt.nu = true
+vim.opt.relativenumber = true
+vim.opt.wrap = false
+vim.opt.termguicolors = true
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.clipboard = "unnamedplus"
+vim.opt.undofile = true
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
-vim.opt.smartindent = true -- 'Smart' indent?
-vim.opt.swapfile = false -- Turn off swapfile
-vim.opt.updatetime = 50 -- Set updatime time
-vim.opt.signcolumn = "yes" -- Always have sign column enabled
-vim.opt.guicursor = "" -- Disable cursor styling
-vim.opt.winborder = "rounded" -- Rounded window borders
-vim.opt.hlsearch = false -- Disable search highlighting
+vim.opt.swapfile = false
+vim.opt.signcolumn = "yes"
+vim.opt.winborder = "double"
+vim.opt.hlsearch = false
+vim.opt.updatetime = 100
+vim.opt.syntax = "on"
+vim.opt.writebackup = false
 
-vim.keymap.set("n", "n", "nzzzv", { desc = "Center next search result" })
-vim.keymap.set("n", "N", "Nzzzv", { desc = "Center previous search result" })
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Center half page down" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Center half page up" })
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down", silent = true })
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up", silent = true })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line selection down", silent = true })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line selection up", silent = true })
-vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
-vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
-
-vim.lsp.enable({ "lua_ls", "pyright", "ruff", "clangd", "texlab", "html", "cssls", "ts_ls" })
-
-vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
-vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
+vim.lsp.enable({ "lua_ls", "pyright", "ruff", "clangd", "texlab", "ts_ls" })
 
 local lsp_log_group = vim.api.nvim_create_augroup("PythonLspDebug", { clear = true })
 
@@ -76,27 +61,51 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 	end,
 })
 
+vim.keymap.set("n", "n", "nzzzv", { desc = "Center next search result" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Center previous search result" })
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Center half page down" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Center half page up" })
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down", silent = true })
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up", silent = true })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line selection down", silent = true })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line selection up", silent = true })
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
+vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
+
 require("lazy").setup({
 	spec = {
-		{ "webhooked/kanso.nvim", lazy = false, priority = 1000, opts = { transparent = true } },
 		{
-			"nvim-mini/mini.ai",
-			version = false,
+			"vyfor/cord.nvim",
+			build = ":Cord update",
 			event = "VeryLazy",
-			opts = {},
+			opts = { display = { theme = "catppuccin", flavor = "accent" } },
 		},
 		{
-			"nvim-mini/mini.surround",
-			version = false,
-			event = "VeryLazy",
-			opts = {},
+			"webhooked/kanso.nvim",
+			priority = 1000,
+			opts = {
+				transparent = true,
+				commentStyle = { italic = true },
+				functionStyle = { bold = true },
+				keywordStyle = { bold = true },
+				statementStyle = { bold = true },
+				typeStype = { bold = true },
+			},
 		},
-		{
-			"nvim-mini/mini.snippets",
-			version = false,
-			event = "VeryLazy",
-			opts = {},
-		},
+		-- { "nvim-mini/mini.statusline", version = "*", event = "VeryLazy", opts = {} },
+		{ "nvim-mini/mini.diff", version = false, event = "VeryLazy", opts = {} },
+		-- {
+		-- 	"nvim-mini/mini-git",
+		-- 	version = false,
+		-- 	event = "VeryLazy",
+		-- 	config = function()
+		-- 		require("mini.git").setup()
+		-- 	end,
+		-- },
+		{ "nvim-mini/mini.ai", version = false, event = "VeryLazy", opts = {} },
+		{ "nvim-mini/mini.surround", version = false, event = "VeryLazy", opts = {} },
 		{
 			"ibhagwan/fzf-lua",
 			cmd = { "FzfLua" },
@@ -137,36 +146,67 @@ require("lazy").setup({
 			},
 		},
 		{
-			"folke/lazydev.nvim",
-			ft = { "lua" },
+			"nvim-treesitter/nvim-treesitter",
+			lazy = false,
+			event = "BufRead",
+			branch = "main",
+			build = ":TSUpdate",
+			---@class TSConfig
 			opts = {
-				library = {
-					{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
+				ensure_installed = {
+					-- Systems
+					"bash",
+					"make",
+					"cmake",
+					"dockerfile",
+					"zathurarc",
+					-- Languages
+					"python",
+					-- Web
+					"html",
+					"css",
+					"typescript",
+					"tsx",
+					-- Data formats
+					"json",
+					"yaml",
+					"toml",
+					-- Git
+					"gitignore",
 				},
 			},
+			config = function(_, opts)
+				-- install parsers from custom opts.ensure_installed
+				if opts.ensure_installed and #opts.ensure_installed > 0 then
+					require("nvim-treesitter").install(opts.ensure_installed)
+					-- register and start parsers for filetypes
+					for _, parser in ipairs(opts.ensure_installed) do
+						local filetypes = parser -- In this case, parser is the filetype/language name
+						vim.treesitter.language.register(parser, filetypes)
+
+						vim.api.nvim_create_autocmd({ "FileType" }, {
+							pattern = filetypes,
+							callback = function(event)
+								vim.treesitter.start(event.buf, parser)
+							end,
+						})
+					end
+				end
+			end,
 		},
 		{
 			"saghen/blink.cmp",
 			version = "1.*",
+			dependencies = { "L3MON4D3/LuaSnip", version = "v2.*" },
 			event = { "InsertEnter" },
 			opts = {
-                snippets = { preset = "mini_snippets" },
+				snippets = { preset = "luasnip" },
 				signature = { enabled = true },
 				completion = {
 					menu = { border = "rounded" },
 					documentation = { window = { border = "rounded" } },
-					ghost_text = { enabled = false },
 				},
-				sources = {
-					default = { "lsp", "path", "snippets", "lazydev" },
-					providers = {
-						lazydev = {
-							name = "LazyDev",
-							module = "lazydev.integrations.blink",
-							score_offset = 100,
-						},
-					},
-				},
+				sources = { default = { "lsp", "path", "snippets" } },
 			},
 		},
 		{
@@ -177,7 +217,8 @@ require("lazy").setup({
 				{
 					"<leader>ff",
 					function()
-						require("conform").format({ timeout_ms = 500, lsp_format = "fallback" })
+						require("conform").format({ async = true, lsp_format = "fallback" })
+						-- require("conform").format({ timeout_ms = 500, lsp_format = "fallback" })
 					end,
 					desc = "Format buffer",
 				},
@@ -193,44 +234,6 @@ require("lazy").setup({
 			},
 		},
 		{
-			"mfussenegger/nvim-lint",
-			event = { "BufReadPost", "BufNewFile" },
-			config = function()
-				local lint = require("lint")
-				lint.linters_by_ft = {
-					python = { "ruff" },
-					c = { "clangtidy" },
-					cpp = { "clangtidy" },
-				}
-
-				local lint_group = vim.api.nvim_create_augroup("lint", { clear = true })
-
-				vim.api.nvim_create_autocmd({ "BufWritePost", "TextChanged" }, {
-					group = lint_group,
-					callback = function()
-						if vim.bo.modifiable then
-							lint.try_lint()
-						end
-					end,
-				})
-			end,
-		},
-		{
-			"nvim-treesitter/nvim-treesitter",
-			branch = "master",
-			build = ":TSUpdate",
-			lazy = false,
-			config = function()
-				---@diagnostic disable: missing-fields
-				require("nvim-treesitter.configs").setup({
-					ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline", "python" },
-					auto_install = false,
-					ignore_install = { "latex" },
-					highlight = { enable = true },
-				})
-			end,
-		},
-		{
 			"lervag/vimtex",
 			init = function()
 				vim.g.tex_flavor = "latex"
@@ -243,52 +246,9 @@ require("lazy").setup({
 				vim.g.vimtex_compiler_latexmk_engines = { _ = "-lualatex" }
 			end,
 		},
-		{
-			"L3MON4D3/LuaSnip",
-			ft = { "tex" },
-			version = "v2.*",
-			config = function()
-				local ls = require("luasnip")
-
-				ls.config.set_config({
-					history = false,
-					enable_autosnippets = true,
-					-- store_selection_keys = "<Tab>",
-				})
-
-				-- vim.cmd([[
-				--                 imap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
-				--                 smap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
-				--             ]])
-
-				vim.keymap.set(
-					"",
-					"<leader>sr",
-					"<Cmd>lua require('luasnip.loaders.from_lua').lazy_load({paths = '~/.config/nvim/LuaSnip/'})<CR><Cmd>echo 'Snippets reloaded'<CR>",
-					{ desc = "Reloaded snippets" }
-				)
-
-				_G.s = ls.snippet
-				_G.sn = ls.snippet_node
-				_G.t = ls.text_node
-				_G.i = ls.insert_node
-				_G.f = ls.function_node
-				_G.d = ls.dynamic_node
-				_G.fmt = require("luasnip.extras.fmt").fmt
-				_G.fmta = require("luasnip.extras.fmt").fmta
-				_G.rep = require("luasnip.extras").rep
-
-				---@diagnostic disable: assign-type-mismatch
-				require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/LuaSnip/" })
-			end,
-		},
 	},
 	ui = { border = "rounded" },
 	checker = { enabled = false },
 })
 
 vim.cmd.colorscheme("kanso-zen")
-
-if true then
-    print("Hello")
-end

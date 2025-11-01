@@ -1,17 +1,10 @@
-local visual = function(_, parent)
-	if #parent.snippet.env.LS_SELECT_RAW > 0 then
-		return sn(nil, i(1, parent.snippet.env.LS_SELECT_RAW))
-	else
-		return sn(nil, i(1))
-	end
-end
+local helpers = require("helpers.luasnip_helpers")
+local visual = helpers.visual
 
 local tex = {}
-
 tex.in_math = function()
 	return vim.fn["vimtex#syntax#in_mathzone"]() == 1
 end
-
 tex.in_text = function()
 	return not tex.in_math()
 end
