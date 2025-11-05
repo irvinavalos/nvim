@@ -44,6 +44,8 @@ vim.opt.hlsearch = false
 vim.opt.updatetime = 100
 vim.opt.syntax = "on"
 vim.opt.writebackup = false
+vim.opt.laststatus = 3
+vim.opt.guicursor = ""
 
 vim.lsp.enable({ "lua_ls", "pyright", "ruff", "clangd", "texlab", "ts_ls" })
 
@@ -91,7 +93,12 @@ require("lazy").setup({
 				functionStyle = { bold = true },
 				keywordStyle = { bold = true },
 				statementStyle = { bold = true },
-				typeStype = { bold = true },
+				typeStyle = { bold = true },
+				overrides = function(colors)
+					return {
+						WinSeparator = { fg = colors.theme.syn.type },
+					}
+				end,
 			},
 		},
 		{ "nvim-mini/mini.statusline", version = "*", event = "VeryLazy", opts = {} },
