@@ -18,91 +18,22 @@ vim.opt.rtp:prepend(lazypath)
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
+vim.g.netrw_liststyle = 3
 vim.g.loaded_node_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0
 
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.scrolloff = 12
-vim.opt.nu = true
-vim.opt.relativenumber = true
-vim.opt.wrap = false
-vim.opt.termguicolors = true
-vim.opt.splitbelow = true
-vim.opt.splitright = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.undofile = true
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.swapfile = false
-vim.opt.signcolumn = "yes"
-vim.opt.winborder = "double"
-vim.opt.hlsearch = false
-vim.opt.updatetime = 100
-vim.opt.syntax = "on"
-vim.opt.writebackup = false
-vim.opt.laststatus = 3
-vim.opt.guicursor = ""
-
-vim.lsp.enable({ "lua_ls", "pyright", "ruff", "clangd", "texlab", "ts_ls" })
-
-local lsp_log_group = vim.api.nvim_create_augroup("PythonLspDebug", { clear = true })
-
-vim.api.nvim_create_autocmd({ "FileType" }, {
-	group = lsp_log_group,
-	pattern = "*",
-	callback = function(args)
-		if args.match ~= "python" then
-			vim.lsp.set_log_level("warn") -- Switch LSP log level to WARN for non python files
-		else
-			vim.lsp.set_log_level("debug") -- Switch LSP log level to DEBUG for python files
-		end
-	end,
-})
-
-vim.keymap.set("n", "n", "nzzzv", { desc = "Center next search result" })
-vim.keymap.set("n", "N", "Nzzzv", { desc = "Center previous search result" })
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Center half page down" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Center half page up" })
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down", silent = true })
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up", silent = true })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move line selection down", silent = true })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move line selection up", silent = true })
-vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect", silent = true })
-vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect", silent = true })
-vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
-vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Declaration" })
+require("options")
+require("keymaps")
+require("autocmds")
+require("lsp")
 
 require("lazy").setup({
 	spec = {
-		{
-			"vyfor/cord.nvim",
-			build = ":Cord update",
-			event = "VeryLazy",
-			opts = { display = { theme = "catppuccin", flavor = "accent" } },
-		},
-		{
-			"webhooked/kanso.nvim",
-			priority = 1000,
-			opts = {
-				transparent = true,
-				commentStyle = { italic = true },
-				functionStyle = { bold = true },
-				keywordStyle = { bold = true },
-				statementStyle = { bold = true },
-				typeStyle = { bold = true },
-				overrides = function(colors)
-					return {
-						WinSeparator = { fg = colors.theme.syn.type },
-					}
-				end,
-			},
-		},
-		{ "nvim-mini/mini.statusline", version = "*", event = "VeryLazy", opts = {} },
-		{ "nvim-mini/mini.diff", version = false, event = "VeryLazy", opts = {} },
+		{ "NeogitOrg/neogit", dependencies = { "nvim-lua/plenary.nvim", "sindrets/diffview.nvim" } },
+		{ "webhooked/kanso.nvim", lazy = false, priority = 1000, opts = {} },
+		{ "nvim-mini/mini.icons", lazy = false, version = false, opts = {} },
 		{
 			"nvim-mini/mini-git",
 			version = false,
