@@ -11,17 +11,4 @@ return {
 		"selene.yml",
 		".git",
 	},
-	settings = {
-		Lua = {
-			workspace = {
-				library = {},
-			},
-			-- runtime = {
-			-- 	version = "LuaJIT",
-			-- },
-			diagnostics = {
-				globals = { "vim" },
-			},
-		},
-	},
 }
