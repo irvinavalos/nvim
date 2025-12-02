@@ -13,12 +13,8 @@ local function on_attach(client, bufnr)
         vim.keymap.set(mode, lhs, rhs, opts)
     end
 
-    key("[d", function()
-        vim.diagnostic.jump({ count = -1 })
-    end, "Previous diagnostic")
-    key("]d", function()
-        vim.diagnostic.jump({ count = 1 })
-    end, "Next diagnostic")
+    key("[d", function() vim.diagnostic.jump({ count = -1 }) end, "Previous diagnostic")
+    key("]d", function() vim.diagnostic.jump({ count = 1 }) end, "Next diagnostic")
 
     if client:supports_method("textDocument/codeAction") then
         key("grt", "<Cmd>FzfLua lsp_code_actions<CR>", "vim.lsp.buf.code_action()")
@@ -43,55 +39,48 @@ local function on_attach(client, bufnr)
     end
 end
 
+local diagnostic_icons = {
+    ERROR = "",
+    WARN = "",
+    HINT = "",
+    INFO = "",
+}
+
 vim.diagnostic.config({
     signs = false, -- Disable diagnostics in signcolumn
-    virtual_text = true,
-    -- virtual_text = {
-    --     prefix = "",
-    --     spacing = 2,
-    --     format = function(diagnostic)
-    --         local msg = diagnostic_icons[vim.diagnostic.severity[diagnostic.severity]]
-    --         if diagnostic.source then
-    --             msg = string.format("%s %s", msg, diagnostic.source)
-    --         end
-    --         if diagnostic.code then
-    --             msg = string.format("%s[%s]", msg, diagnostic.code)
-    --         end
-    --         return msg .. " "
-    --     end,
-    -- },
+    virtual_text = {
+        prefix = "",
+        spacing = 4,
+        format = function(diagnostic)
+            local msg = diagnostic_icons[vim.diagnostic.severity[diagnostic.severity]]
+            if diagnostic.source then msg = string.format("%s %s", msg, diagnostic.source) end
+            if diagnostic.code then msg = string.format("%s[%s]", msg, diagnostic.code) end
+            return msg .. " "
+        end,
+    },
     float = {
         style = "minimal",
         border = "rounded",
         source = "if_many",
-        prefix = "",
-        header = "",
+        prefix = function(diag)
+            local level = vim.diagnostic.severity[diag.severity]
+            local prefix = string.format(" %s ", diagnostic_icons[level])
+            return prefix, "Diagnostic" .. level:gsub("^%l", string.upper)
+        end,
     },
-    -- float = {
-    --     style = "minimal",
-    --     border = "rounded",
-    --     source = "if_many",
-    --     prefix = function(diag)
-    --         local level = vim.diagnostic.severity[diag.severity]
-    --         local prefix = string.format(" %s ", diagnostic_icons[level])
-    --         return prefix, "Diagnostic" .. level:gsub("^%l", string.upper)
-    --     end,
-    -- },
 })
 
 vim.api.nvim_create_autocmd({ "LspAttach" }, {
     desc = "Configure LSP keymaps",
     callback = function(args)
         local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if not client then
-            return
-        end
+        if not client then return end
         on_attach(client, args.buf)
     end,
 })
 
-vim.lsp.enable(vim.iter(vim.api.nvim_get_runtime_file("lsp/*.lua", true))
-    :map(function(file)
-        return vim.fn.fnamemodify(file, ":t:r")
-    end)
-    :totable())
+vim.lsp.enable(
+    vim.iter(vim.api.nvim_get_runtime_file("lsp/*.lua", true))
+        :map(function(file) return vim.fn.fnamemodify(file, ":t:r") end)
+        :totable()
+)

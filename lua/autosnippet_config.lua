@@ -10,11 +10,17 @@ local fmta = require("luasnip.extras.fmt").fmta
 local rep = require("luasnip.extras").rep
 
 ls.config.set_config({
-	history = false,
-	enable_autosnippets = true,
-	store_selection_keys = "<Tab>",
-	region_check_events = "InsertEnter",
-	delete_check_events = "InsertLeave",
+    history = false,
+    enable_autosnippets = true,
+    store_selection_keys = "<Tab>",
+    region_check_events = "InsertEnter",
+    delete_check_events = "InsertLeave",
 })
 
 require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/luasnip/" })
+
+vim.keymap.set(
+    "n",
+    "<leader>sr",
+    '<cmd>lua require("luasnip.loaders.from_lua").lazy_load({paths = "~/.config/nvim/luasnip/"})<CR><cmd>echo "Snippets refreshed!"<CR>'
+)
