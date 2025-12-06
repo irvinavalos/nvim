@@ -16,6 +16,9 @@ return {
             c = { "clang-format" },
             cpp = { "clang-format" },
             tex = { "tex-fmt" },
+            javascript = { "prettier" },
+            typescript = { "prettier" },
+            typescriptreact = { "prettier" },
         },
     },
 }
