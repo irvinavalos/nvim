@@ -23,7 +23,6 @@ return {
             -- Data formats
             "json",
             "json5",
-            "jsonc",
             "yaml",
             "toml",
             -- Git
