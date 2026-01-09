@@ -19,6 +19,7 @@ return {
             javascript = { "prettier" },
             typescript = { "prettier" },
             typescriptreact = { "prettier" },
+            ocaml = { "ocamlformat" },
         },
     },
 }
