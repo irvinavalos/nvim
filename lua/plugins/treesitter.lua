@@ -14,6 +14,7 @@ return {
             "zathurarc",
             -- Languages
             "python",
+            "ocaml",
             -- Web
             "html",
             "css",
