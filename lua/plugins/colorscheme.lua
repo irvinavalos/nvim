@@ -1,10 +1,42 @@
 return {
+    -- {
+    --     "webhooked/kanso.nvim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function() vim.cmd.colorscheme("kanso-zen") end,
+    -- },
+    -- {
+    --     "folke/tokyonight.nvim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function() vim.cmd.colorscheme("tokyonight-night") end,
+    -- },
     {
-        "webhooked/kanso.nvim",
+        "catppuccin/nvim",
         lazy = false,
-        priority = 100,
-        config = function() vim.cmd.colorscheme("kanso-zen") end,
+        priority = 1000,
+        config = function() vim.cmd.colorscheme("catppuccin-mocha") end,
     },
+    -- {
+    --     "loctvl842/monokai-pro.nvim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function()
+    --         require("monokai-pro").setup()
+    --         vim.cmd.colorscheme("monokai-pro")
+    --     end,
+    -- },
+    -- {
+    --     "bluz71/vim-moonfly-colors",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function() vim.cmd.colorscheme("moonfly") end,
+    -- },
+    -- {
+    --     "rose-pine/neovim",
+    --     name = "rose-pine",
+    --     config = function() vim.cmd("colorscheme rose-pine") end,
+    -- },
     -- {
     --     "vague-theme/vague.nvim",
     --     lazy = false,
