@@ -15,6 +15,9 @@ return {
             -- Languages
             "python",
             "ocaml",
+            "c",
+            "cpp",
+            "lua",
             -- Web
             "html",
             "css",

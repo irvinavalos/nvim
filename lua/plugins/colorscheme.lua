@@ -1,9 +1,21 @@
 return {
+    {
+        "webhooked/kanso.nvim",
+        lazy = false,
+        priority = 1000,
+        config = function()
+            require("kanso").setup({
+                background = { dark = "zen", light = "zen" },
+                foreground = "saturated",
+            })
+            vim.cmd.colorscheme("kanso")
+        end,
+    },
     -- {
-    --     "webhooked/kanso.nvim",
+    --     "yorumicolors/yorumi.nvim",
     --     lazy = false,
     --     priority = 1000,
-    --     config = function() vim.cmd.colorscheme("kanso-zen") end,
+    --     config = function() vim.cmd.colorscheme("yorumi") end,
     -- },
     -- {
     --     "folke/tokyonight.nvim",
@@ -11,12 +23,18 @@ return {
     --     priority = 1000,
     --     config = function() vim.cmd.colorscheme("tokyonight-night") end,
     -- },
-    {
-        "catppuccin/nvim",
-        lazy = false,
-        priority = 1000,
-        config = function() vim.cmd.colorscheme("catppuccin-mocha") end,
-    },
+    -- {
+    --     "catppuccin/nvim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function() vim.cmd.colorscheme("catppuccin-mocha") end,
+    -- },
+    -- {
+    --     "EdenEast/nightfox.nvim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function() vim.cmd.colorscheme("nordfox") end,
+    -- },
     -- {
     --     "loctvl842/monokai-pro.nvim",
     --     lazy = false,
