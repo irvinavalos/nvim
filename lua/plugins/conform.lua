@@ -20,6 +20,7 @@ return {
             typescript = { "prettier" },
             typescriptreact = { "prettier" },
             ocaml = { "ocamlformat" },
+            go = { "gofmt" },
         },
     },
 }

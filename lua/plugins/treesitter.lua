@@ -18,6 +18,7 @@ return {
             "c",
             "cpp",
             "lua",
+            "go",
             -- Web
             "html",
             "css",
