@@ -11,12 +11,6 @@ local function set_option(table)
   end
   return nil
 end
-local function init_lsp(lsps)
-  for _, lsp in ipairs(lsps) do
-    vim.lsp.enable(lsp)
-  end
-  return nil
-end
 local function keymap(modes, lhs, rhs, opts)
   return vim.keymap.set(modes, lhs, rhs, opts)
 end
@@ -40,8 +34,28 @@ local function _2_()
   return vim.opt_local.formatoptions:remove({"c", "r", "o"})
 end
 vim.api.nvim_create_autocmd("FileType", {desc = "Disable inserting comments on new line", group = vim.api.nvim_create_augroup("disable-auto-comments", {clear = true}), callback = _2_})
-init_lsp({"lua_ls", "fennel_ls", "clangd", "pyright", "ruff"})
-vim.pack.add({{src = "https://github.com/oskarnurm/koda.nvim"}, {src = "https://github.com/atweiden/vim-fennel"}, {src = "https://github.com/stevearc/conform.nvim"}, {src = "https://github.com/mfussenegger/nvim-lint"}, {src = "https://github.com/rafamadriz/friendly-snippets"}, {src = "https://github.com/saghen/blink.cmp"}, {src = "https://github.com/ibhagwan/fzf-lua"}, {src = "https://github.com/lewis6991/gitsigns.nvim"}, {src = "https://github.com/nvim-mini/mini.surround"}, {src = "https://github.com/nvim-mini/mini.ai"}, {src = "https://github.com/nvim-mini/mini.statusline"}, {src = "https://github.com/MeanderingProgrammer/render-markdown.nvim"}, {src = "https://github.com/nvim-tree/nvim-web-devicons"}})
+vim.lsp.enable({"lua_ls", "fennel_ls", "clangd", "pyright", "ruff"})
+local icons = require("icons")
+local function _3_(diagnostic)
+  local sources = {["Lua Diagnostics."] = "lua", ["Lua Syntax Check."] = "lua"}
+  local msg = icons.diagnostics[vim.diagnostic.severity[diagnostic.severity]]
+  if diagnostic.source then
+    msg = (string.format("%s %s", msg, sources[diagnostic.source]) or diagnostic.source())
+  else
+  end
+  if diagnostic.code then
+    msg = string.format("%s[%s]", msg, diagnostic.code)
+  else
+  end
+  return (msg .. " ")
+end
+local function _6_(diagnostic)
+  local level = vim.diagnostic.severity[diagnostic.severity]
+  local prefix = string.format(" %s ", icons.diagnostics.level)
+  return prefix, ("Diagnostic" .. string.gsub(level, "^%l", string.upper))
+end
+vim.diagnostic.config({status = {format = {["vim.diagnostic.severity.ERROR"] = icons.diagnostics.ERROR, ["vim.diagnostic.severity.WARN"] = icons.diagnostics.WARN, ["vim.diagnostic.severity.INFO"] = icons.diagnostics.INFO, ["vim.diagnostic.severity.HINT"] = icons.diagnostics.HINT}}, virtual_text = {prefix = "", spacing = 2, format = _3_}, float = {source = "if_many", prefix = _6_}, signs = false})
+vim.pack.add({{src = "https://github.com/oskarnurm/koda.nvim"}, {src = "https://github.com/atweiden/vim-fennel"}, {src = "https://github.com/stevearc/conform.nvim"}, {src = "https://github.com/mfussenegger/nvim-lint"}, {src = "https://github.com/rafamadriz/friendly-snippets"}, {src = "https://github.com/saghen/blink.cmp"}, {src = "https://github.com/ibhagwan/fzf-lua"}, {src = "https://github.com/lewis6991/gitsigns.nvim"}, {src = "https://github.com/nvim-mini/mini.surround"}, {src = "https://github.com/nvim-mini/mini.ai"}, {src = "https://github.com/MeanderingProgrammer/render-markdown.nvim"}, {src = "https://github.com/nvim-tree/nvim-web-devicons"}})
 do
   local color = require("koda")
   color.setup({transparent = true})
@@ -50,19 +64,19 @@ end
 do
   local conform = require("conform")
   conform.setup({formatters_by_ft = {lua = {"stylua"}, fennel = {"fnlfmt"}, c = {"clang-format"}, cpp = {"clang-format"}, python = {"ruff_fix", "ruff_format", "ruff_organize_imports"}}})
-  local function _3_()
+  local function _7_()
     return conform.format({timeout_ms = 500, lsp_format = "fallback"})
   end
-  keymap("n", "<leader>ff", _3_, {desc = "Format file"})
+  keymap("n", "<leader>ff", _7_, {desc = "Format file"})
 end
 do
   local lint = require("lint")
   lint.linters_by_ft = {python = {"ruff"}, c = {"clangtidy"}, cpp = {"clangtidy"}}
 end
-local function _4_()
+local function _8_()
   return require("lint").try_lint()
 end
-vim.api.nvim_create_autocmd({"BufWritePost", "BufReadPost"}, {callback = _4_})
+vim.api.nvim_create_autocmd({"BufWritePost", "BufReadPost"}, {callback = _8_})
 do
   local blink = require("blink.cmp")
   blink.setup({snippets = {preset = "default"}, completion = {list = {selection = {auto_insert = true, preselect = false}, max_items = 10}, documentation = {window = {border = "rounded"}, auto_show = true}, menu = {border = "rounded", scrollbar = false}}, cmdline = {enabled = false}, sources = {default = {"lsp", "path", "snippets"}}, signature = {enabled = true}})
@@ -90,8 +104,7 @@ do
   ai.setup({})
 end
 do
-  local statusline = require("mini.statusline")
-  statusline.setup({})
+  local markdown = require("render-markdown")
+  markdown.setup({})
 end
-local markdown = require("render-markdown")
-return markdown.setup({})
+return require("statusline")

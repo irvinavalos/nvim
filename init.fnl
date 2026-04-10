@@ -8,10 +8,6 @@
   (each [k v (pairs table)]
     (tset vim.opt k v)))
 
-(fn init-lsp [lsps]
-  (each [_ lsp (ipairs lsps)]
-    (vim.lsp.enable lsp)))
-
 (fn keymap [modes lhs rhs opts]
   (vim.keymap.set modes lhs rhs opts))
 
@@ -84,7 +80,50 @@
                                                                                :r
                                                                                :o]))})
 
-(init-lsp [:lua_ls :fennel_ls :clangd :pyright :ruff])
+(vim.lsp.enable [:lua_ls :fennel_ls :clangd :pyright :ruff])
+
+(local icons (require :icons))
+
+(vim.diagnostic.config {:status {:format {:vim.diagnostic.severity.ERROR icons.diagnostics.ERROR
+                                          :vim.diagnostic.severity.WARN icons.diagnostics.WARN
+                                          :vim.diagnostic.severity.INFO icons.diagnostics.INFO
+                                          :vim.diagnostic.severity.HINT icons.diagnostics.HINT}}
+                        :virtual_text {:prefix ""
+                                       :spacing 2
+                                       :format (fn [diagnostic]
+                                                 (local sources
+                                                        {"Lua Diagnostics." :lua
+                                                         "Lua Syntax Check." :lua})
+                                                 (var msg
+                                                      (. icons.diagnostics
+                                                         (. vim.diagnostic.severity
+                                                            diagnostic.severity)))
+                                                 (when (. diagnostic :source)
+                                                   (set msg
+                                                        (or (string.format "%s %s"
+                                                                           msg
+                                                                           (. sources
+                                                                              diagnostic.source))
+                                                            (diagnostic.source))))
+                                                 (when (. diagnostic :code)
+                                                   (set msg
+                                                        (string.format "%s[%s]"
+                                                                       msg
+                                                                       diagnostic.code)))
+                                                 (.. msg " "))}
+                        :float {:source :if_many
+                                :prefix (fn [diagnostic]
+                                          (local level
+                                                 (. vim.diagnostic.severity
+                                                    diagnostic.severity))
+                                          (local prefix
+                                                 (string.format " %s "
+                                                                icons.diagnostics.level))
+                                          (values prefix
+                                                  (.. :Diagnostic
+                                                      (string.gsub level "^%l"
+                                                                   string.upper))))}
+                        :signs false})
 
 (vim.pack.add [{:src "https://github.com/oskarnurm/koda.nvim"}
                {:src "https://github.com/atweiden/vim-fennel"}
@@ -96,7 +135,6 @@
                {:src "https://github.com/lewis6991/gitsigns.nvim"}
                {:src "https://github.com/nvim-mini/mini.surround"}
                {:src "https://github.com/nvim-mini/mini.ai"}
-               {:src "https://github.com/nvim-mini/mini.statusline"}
                {:src "https://github.com/MeanderingProgrammer/render-markdown.nvim"}
                {:src "https://github.com/nvim-tree/nvim-web-devicons"}])
 
@@ -160,8 +198,7 @@
 (let [ai (require :mini.ai)]
   (ai.setup {}))
 
-(let [statusline (require :mini.statusline)]
-  (statusline.setup {}))
-
 (let [markdown (require :render-markdown)]
   (markdown.setup {}))
+
+(require :statusline)
