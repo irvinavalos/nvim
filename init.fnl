@@ -80,50 +80,9 @@
                                                                                :r
                                                                                :o]))})
 
-(vim.lsp.enable [:lua_ls :fennel_ls :clangd :pyright :ruff])
+(require :statusline)
 
-(local icons (require :icons))
-
-(vim.diagnostic.config {:status {:format {:vim.diagnostic.severity.ERROR icons.diagnostics.ERROR
-                                          :vim.diagnostic.severity.WARN icons.diagnostics.WARN
-                                          :vim.diagnostic.severity.INFO icons.diagnostics.INFO
-                                          :vim.diagnostic.severity.HINT icons.diagnostics.HINT}}
-                        :virtual_text {:prefix ""
-                                       :spacing 2
-                                       :format (fn [diagnostic]
-                                                 (local sources
-                                                        {"Lua Diagnostics." :lua
-                                                         "Lua Syntax Check." :lua})
-                                                 (var msg
-                                                      (. icons.diagnostics
-                                                         (. vim.diagnostic.severity
-                                                            diagnostic.severity)))
-                                                 (when (. diagnostic :source)
-                                                   (set msg
-                                                        (or (string.format "%s %s"
-                                                                           msg
-                                                                           (. sources
-                                                                              diagnostic.source))
-                                                            (diagnostic.source))))
-                                                 (when (. diagnostic :code)
-                                                   (set msg
-                                                        (string.format "%s[%s]"
-                                                                       msg
-                                                                       diagnostic.code)))
-                                                 (.. msg " "))}
-                        :float {:source :if_many
-                                :prefix (fn [diagnostic]
-                                          (local level
-                                                 (. vim.diagnostic.severity
-                                                    diagnostic.severity))
-                                          (local prefix
-                                                 (string.format " %s "
-                                                                icons.diagnostics.level))
-                                          (values prefix
-                                                  (.. :Diagnostic
-                                                      (string.gsub level "^%l"
-                                                                   string.upper))))}
-                        :signs false})
+(require :lsp_setup)
 
 (vim.pack.add [{:src "https://github.com/oskarnurm/koda.nvim"}
                {:src "https://github.com/atweiden/vim-fennel"}
@@ -177,7 +136,7 @@
 (let [fzf (require :fzf-lua)]
   (fzf.setup {:winopts {:height 0.5 :width 0.5 :preview {:hidden true}}
               :oldfiles {:cwd_only true :include_current_session true}
-              :defaults {:file_icons false}}))
+              :defaults {:file_icons true}}))
 
 (keymap :n :<leader>. "<cmd>FzfLua files<cr>" {:desc "Find files"})
 (keymap :n "<leader>," "<cmd>FzfLua buffers<cr>" {:desc "Find buffers"})
@@ -199,6 +158,6 @@
   (ai.setup {}))
 
 (let [markdown (require :render-markdown)]
-  (markdown.setup {}))
-
-(require :statusline)
+  (markdown.setup {:html {:enabled false}
+                   :latex {:enabled false}
+                   :yaml {:enabled false}}))
