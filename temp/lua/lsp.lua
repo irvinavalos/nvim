@@ -60,7 +60,7 @@ vim.diagnostic.config({
     },
     float = {
         style = "minimal",
-        border = "solid",
+        border = "rounded",
         source = "if_many",
         prefix = function(diag)
             local level = vim.diagnostic.severity[diag.severity]

@@ -17,6 +17,6 @@ return {
     opts = {
         winopts = { width = 0.55, height = 0.6, preview = { hidden = true } },
         oldfiles = { cwd_only = true, include_current_session = true },
-        defaults = { file_icons = true },
+        defaults = { file_icons = false },
     },
 }
