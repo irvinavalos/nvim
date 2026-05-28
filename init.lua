@@ -1,88 +1,217 @@
 vim.loader.enable()
-local function set_global(table)
-  for k, v in pairs(table) do
-    vim.g[k] = v
-  end
-  return nil
-end
-local function set_option(table)
-  for k, v in pairs(table) do
-    vim.opt[k] = v
-  end
-  return nil
-end
-local function keymap(modes, lhs, rhs, opts)
-  return vim.keymap.set(modes, lhs, rhs, opts)
-end
-set_global({mapleader = " ", maplocalleader = " ", loaded_node_provider = 0, loaded_perl_provider = 0, loaded_python3_provider = 0, loaded_ruby_provider = 0})
-set_option({signcolumn = "yes", laststatus = 3, scrolloff = 8, sidescrolloff = 8, linebreak = true, number = true, relativenumber = true, tabstop = 8, softtabstop = 4, shiftwidth = 4, expandtab = true, list = true, listchars = {tab = "\194\187 ", trail = "\194\183", nbsp = "\226\144\163"}, fillchars = {eob = " "}, smartcase = true, ignorecase = true, inccommand = "split", splitright = true, splitbelow = true, updatetime = 300, timeoutlen = 300, confirm = true, undofile = true, winborder = "rounded", pumheight = 10, termguicolors = true, clipboard = "unnamedplus", showcmd = false, showmode = false, swapfile = false, wrap = false, writebackup = false})
-keymap("n", "n", "nzzzv", {desc = "Center search result"})
-keymap("n", "N", "Nzzzv", {desc = "Center previous search result"})
-keymap("n", "<C-d>", "<C-d>zz", {desc = "Center page up"})
-keymap("n", "<C-u>", "<C-u>zz", {desc = "Center page down"})
-keymap("n", "<A-j>", ":m .+1<cr>==", {desc = "Move line down"})
-keymap("n", "<A-k>", ":m .-2<cr>==", {desc = "Move line up"})
-keymap("v", "<A-j>", ":m '>+1<CR>gv=gv", {desc = "Move selection down"})
-keymap("v", "<A-k>", ":m '<-2<CR>gv=gv", {desc = "Move selection up"})
-keymap("v", "<", "<gv", {desc = "Indent left"})
-keymap("v", ">", ">gv", {desc = "Indent right"})
-local function _1_()
-  return vim.hl.on_yank({timeout = 100, visual = true})
-end
-vim.api.nvim_create_autocmd("TextYankPost", {desc = "Highlight selection on yank", group = vim.api.nvim_create_augroup("highlight-yank", {clear = true}), pattern = "*", callback = _1_})
-local function _2_()
-  return vim.opt_local.formatoptions:remove({"c", "r", "o"})
-end
-vim.api.nvim_create_autocmd("FileType", {desc = "Disable inserting comments on new line", group = vim.api.nvim_create_augroup("disable-auto-comments", {clear = true}), callback = _2_})
-require("statusline")
-require("lsp_setup")
-vim.pack.add({{src = "https://github.com/oskarnurm/koda.nvim"}, {src = "https://github.com/atweiden/vim-fennel"}, {src = "https://github.com/stevearc/conform.nvim"}, {src = "https://github.com/mfussenegger/nvim-lint"}, {src = "https://github.com/rafamadriz/friendly-snippets"}, {src = "https://github.com/saghen/blink.cmp"}, {src = "https://github.com/ibhagwan/fzf-lua"}, {src = "https://github.com/lewis6991/gitsigns.nvim"}, {src = "https://github.com/nvim-mini/mini.surround"}, {src = "https://github.com/nvim-mini/mini.ai"}, {src = "https://github.com/MeanderingProgrammer/render-markdown.nvim"}, {src = "https://github.com/nvim-tree/nvim-web-devicons"}})
-do
-  local color = require("koda")
-  color.setup({transparent = true})
-  vim.cmd.colorscheme("koda")
-end
-do
-  local conform = require("conform")
-  conform.setup({formatters_by_ft = {lua = {"stylua"}, fennel = {"fnlfmt"}, c = {"clang-format"}, cpp = {"clang-format"}, python = {"ruff_fix", "ruff_format", "ruff_organize_imports"}}})
-  local function _3_()
-    return conform.format({timeout_ms = 500, lsp_format = "fallback"})
-  end
-  keymap("n", "<leader>ff", _3_, {desc = "Format file"})
-end
-do
-  local lint = require("lint")
-  lint.linters_by_ft = {python = {"ruff"}, c = {"clangtidy"}, cpp = {"clangtidy"}}
-end
-local function _4_()
-  return require("lint").try_lint()
-end
-vim.api.nvim_create_autocmd({"BufWritePost", "BufReadPost"}, {callback = _4_})
-do
-  local blink = require("blink.cmp")
-  blink.setup({snippets = {preset = "default"}, completion = {list = {selection = {auto_insert = true, preselect = false}, max_items = 10}, documentation = {window = {border = "rounded"}, auto_show = true}, menu = {border = "rounded", scrollbar = false}}, cmdline = {enabled = false}, sources = {default = {"lsp", "path", "snippets"}}, signature = {enabled = true}})
-end
-do
-  local fzf = require("fzf-lua")
-  fzf.setup({winopts = {height = 0.5, width = 0.5, preview = {hidden = true}}, oldfiles = {cwd_only = true, include_current_session = true}, defaults = {file_icons = true}})
-end
-keymap("n", "<leader>.", "<cmd>FzfLua files<cr>", {desc = "Find files"})
-keymap("n", "<leader>,", "<cmd>FzfLua buffers<cr>", {desc = "Find buffers"})
-keymap("n", "<leader>fg", "<cmd>FzfLua live_grep<cr>", {desc = "Grep"})
-keymap("x", "<leader>fg", "<cmd>FzfLua grep_visual<cr>", {desc = "Grep line"})
-keymap("n", "<leader>fh", "<cmd>FzfLua helptags<cr>", {desc = "Helptags"})
-keymap("n", "<leader>fd", "<cmd>FzfLua lsp_document_diagnostics<cr>", {desc = "LSP diagnostics"})
-do
-  local gitsigns = require("gitsigns")
-  gitsigns.setup({preview_config = {border = "rounded"}, numhl = true, signcolumn = false})
-end
-do
-  local surround = require("mini.surround")
-  surround.setup({})
-end
-do
-  local ai = require("mini.ai")
-  ai.setup({})
-end
-local markdown = require("render-markdown")
-return markdown.setup({html = {enabled = false}, latex = {enabled = false}, yaml = {enabled = false}})
+
+require("vim._core.ui2").enable({
+    enable = true,
+    msg = {
+        target = "cmd",
+        pager = { height = 0.5 },
+        dialog = { height = 0.5 },
+        cmd = { height = 0.5 },
+        msg = { height = 0.5, timeout = 400 },
+    },
+})
+
+----- Global Variables -----
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0
+
+vim.g.have_nerd_font = true
+
+vim.g.netrw_banner = 0
+vim.g.netrw_liststyle = 3
+
+----- Editor Options -----
+
+vim.o.termguicolors = true
+vim.o.winborder = "rounded"
+
+vim.o.number = true
+vim.o.relativenumber = true
+
+vim.o.breakindent = true
+
+vim.o.undofile = true
+vim.o.swapfile = false
+vim.o.writebackup = false
+vim.o.exrc = true
+
+vim.o.ignorecase = true
+vim.o.smartcase = true
+
+vim.o.signcolumn = "yes"
+
+vim.o.updatetime = 300
+vim.o.timeoutlen = 300
+vim.o.ttimeoutlen = 10
+
+vim.o.splitbelow = true
+vim.o.splitright = true
+
+vim.o.inccommand = "split"
+
+vim.o.scrolloff = 10
+vim.o.sidescrolloff = 10
+
+vim.o.confirm = true
+
+vim.o.laststatus = 3
+vim.o.showmode = false
+vim.o.showcmd = false
+
+vim.o.clipboard = "unnamedplus"
+
+----- QOL Keymaps -----
+
+vim.keymap.set("n", "n", "nzzzv", { desc = "Center search result" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Center previous search result" })
+
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Center page up" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Center page down" })
+
+vim.keymap.set("n", "<A-j>", ":m .+1<cr>==", { desc = "Move line down" })
+vim.keymap.set("n", "<A-k>", ":m .-2<cr>==", { desc = "Move line up" })
+
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right" })
+
+----- QOL Plugins -----
+
+vim.pack.add({
+    -- "https://github.com/oskarnurm/koda.nvim",
+    "https://github.com/webhooked/kanso.nvim",
+    "https://github.com/NMAC427/guess-indent.nvim",
+    "https://github.com/lewis6991/gitsigns.nvim",
+    "https://github.com/nvim-tree/nvim-web-devicons",
+    "https://github.com/lukas-reineke/indent-blankline.nvim",
+    "https://github.com/nvim-mini/mini.nvim",
+})
+
+vim.cmd.colorscheme("kanso-zen")
+
+require("guess-indent").setup()
+
+require("gitsigns").setup({
+    signs = {
+        add = { text = "+" },
+        change = { text = "~" },
+        delete = { text = "_" },
+        topdelete = { text = "‾" },
+        changedelete = { text = "~" },
+    },
+    gh = true,
+    current_line_blame = true,
+    on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        vim.keymap.set("n", "[h", gs.prev_hunk, { desc = "Previous hunk", buffer = bufnr })
+        vim.keymap.set("n", "]h", gs.next_hunk, { desc = "Next hunk", buffer = bufnr })
+
+        vim.keymap.set("n", "<leader>gR", gs.reset_buffer, { desc = "[G]itsigns [R]eset buffer", buffer = bufnr })
+        vim.keymap.set("n", "<leader>gr", gs.reset_hunk, { desc = "[G]itsigns [R]eset hunk", buffer = bufnr })
+        vim.keymap.set("n", "<leader>gs", gs.stage_hunk, { desc = "[G]itsigns [S]tage hunk", buffer = bufnr })
+    end,
+})
+
+require("ibl").setup({})
+
+require("mini.ai").setup({
+    mappings = {
+        around_next = "aa",
+        inside_next = "ii",
+    },
+    n_lines = 500,
+})
+
+require("mini.surround").setup({})
+
+local pick = require("mini.pick")
+pick.setup({})
+
+vim.keymap.set("n", "<leader>.", "<cmd>Pick files<cr>", { desc = "Search files" })
+vim.keymap.set("n", "<leader>,", "<cmd>Pick buffers<cr>", { desc = "Search files" })
+vim.keymap.set("n", "<leader>fh", "<cmd>Pick help<cr>", { desc = "Search help tags" })
+
+----- LSP Setup -----
+
+vim.pack.add({ "https://github.com/neovim/nvim-lspconfig" })
+
+vim.lsp.enable({
+    "lua_ls",
+    "pyright",
+    "clangd",
+})
+
+----- Formatting + Linting -----
+
+vim.pack.add({
+    "https://github.com/stevearc/conform.nvim",
+    "https://github.com/mfussenegger/nvim-lint",
+})
+
+local conform = require("conform")
+conform.setup({
+    formatters_by_ft = {
+        lua = { "stylua" },
+        c = { "clang-format" },
+        cpp = { "clang-format" },
+        python = { "ruff_fix", "ruff_format", "ruff_organize_imports" },
+    },
+})
+
+vim.keymap.set(
+    { "n", "v" },
+    "<leader>ff",
+    function() conform.format({ async = true }) end,
+    { desc = "[F]ormat [F]ile" }
+)
+
+local lint = require("lint")
+lint.linters_by_ft = {
+    markdown = { "markdownlint" },
+    python = { "ruff" },
+    c = { "clangtidy" },
+    cpp = { "clangtidy" },
+}
+
+local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+    group = lint_augroup,
+    callback = function()
+        if vim.bo.modifiable then lint.try_lint() end
+    end,
+})
+
+----- Autocomplete -----
+
+vim.pack.add({
+    "https://github.com/L3MON4D3/LuaSnip",
+    "https://github.com/saghen/blink.cmp",
+    "https://github.com/saghen/blink.lib",
+})
+
+require("luasnip").setup({})
+require("luasnip.loaders.from_vscode").lazy_load()
+
+local cmp = require("blink.cmp")
+
+cmp.build():wait(60000)
+cmp.setup({
+    completion = {
+        list = { selection = { auto_insert = true, preselect = false }, max_items = 10 },
+        documentation = { window = { border = "rounded" }, auto_show = true },
+        menu = { border = "rounded", scrollbar = false },
+    },
+    snippets = { preset = "luasnip" },
+    cmdline = { enabled = false },
+    sources = { default = { "lsp", "path", "snippets" } },
+    signature = { enabled = true },
+})
