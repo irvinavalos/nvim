@@ -28,6 +28,11 @@
       "rev": "dd3f588bacbeb041be6facf1742e42097f62165d",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
+    "inlay-hint.nvim": {
+      "rev": "369aa3d5f10b41580242cd6e825bd00cfa565464",
+      "src": "https://github.com/felpafel/inlay-hint.nvim",
+      "version": "'main'"
+    },
     "kanso.nvim": {
       "rev": "1afbbb449aa0254823dbe1932e3cbb51886ff9fe",
       "src": "https://github.com/webhooked/kanso.nvim"

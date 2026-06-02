@@ -7,19 +7,28 @@ require("vim._core.ui2").enable({})
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+vim.g.have_nerd_font = true
+
+-- Disable irrelevant plugins
+
+vim.g.loaded_zipPlugin = 1
+vim.g.loaded_zip = 1
+vim.g.loaded_gzip = 1
+vim.g.loaded_tarPlugin = 1
+vim.g.loaded_tar = 1
+
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
-vim.g.have_nerd_font = true
-
-vim.g.netrw_banner = 0
-vim.g.netrw_liststyle = 3
-vim.g.netrw_fastbrowse = 2
-vim.g.netrw_dirhistmax = 0
-vim.g.netrw_keepdir = 0
-vim.g.netrw_bufsettings = "noma nomod nonu nobl nowrap ro rnu"
+-- Comment out below settings in favor of Oil
+-- vim.g.netrw_banner = 0
+-- vim.g.netrw_liststyle = 3
+-- vim.g.netrw_fastbrowse = 2
+-- vim.g.netrw_dirhistmax = 0
+-- vim.g.netrw_keepdir = 0
+-- vim.g.netrw_bufsettings = "noma nomod nonu nobl nowrap ro rnu"
 
 ----- Editor Options -----
 
@@ -29,16 +38,17 @@ vim.o.pumheight = 15
 vim.o.pumborder = "rounded"
 
 vim.o.expandtab = true
+vim.o.softtabstop = 4
 vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 
-vim.api.nvim_set_hl(0, "Cursor", { fg = "#000000", bg = "#ffffff" })
-vim.o.guicursor = "a:block-Cursor"
+
+-- vim.api.nvim_set_hl(0, "Cursor", { fg = "#000000", bg = "#ffffff" })
+--
+-- vim.o.guicursor = "a:block-Cursor"
 
 vim.o.number = true
 vim.o.relativenumber = true
-
-vim.o.breakindent = true
 
 vim.o.undofile = true
 vim.o.swapfile = false
@@ -51,7 +61,7 @@ vim.o.smartcase = true
 vim.o.signcolumn = "yes"
 
 vim.o.updatetime = 250
-vim.o.timeoutlen = 500
+vim.o.timeoutlen = 300
 vim.o.ttimeoutlen = 25
 
 vim.o.splitbelow = true
@@ -70,8 +80,10 @@ vim.o.showcmd = false
 
 vim.o.clipboard = "unnamedplus"
 
-vim.opt.list = true
-vim.opt.listchars = { tab = "| ", leadmultispace = "|" .. string.rep(" ", vim.o.shiftwidth - 1) }
+
+vim.o.cursorline = true
+vim.o.cursorlineopt = "number"
+vim.api.nvim_set_hl(0, "CursorLineNr", { fg = "#c3ccdc", bold = true })
 
 ----- QOL Keymaps -----
 
@@ -92,8 +104,8 @@ vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
 vim.keymap.set("v", "<", "<gv", { desc = "Indent left" })
 vim.keymap.set("v", ">", ">gv", { desc = "Indent right" })
 
-vim.keymap.set("n", "<leader>ht", "<cmd>split | terminal<CR>", { desc = "[V]ertical [T]erminal" })
-vim.keymap.set("n", "<leader>vt", "<cmd>vsplit | terminal<CR>", { desc = "[H]orizontal [T]erminal" })
+vim.keymap.set("n", "<leader>ht", "<cmd>split | terminal<CR>", { desc = "[H]orizontal [T]erminal" })
+vim.keymap.set("n", "<leader>vt", "<cmd>vsplit | terminal<CR>", { desc = "[V]ertical [T]erminal" })
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
 ----- QOL Autocmds -----
@@ -162,7 +174,24 @@ require("mini.surround").setup({})
 local extra = require("mini.extra")
 local pick = require("mini.pick")
 
-pick.setup({})
+pick.setup({
+    window = {
+        config = function()
+            local height = math.floor(0.5 * vim.o.lines)
+            local width = math.floor(0.5 * vim.o.columns)
+
+            return {
+                anchor = "NW",
+                height = height,
+                width = width,
+                border = "rounded",
+                row = math.floor(0.5 * (vim.o.lines - height)),
+                col = math.floor(0.5 * (vim.o.columns - width)),
+            }
+        end,
+    },
+})
+
 extra.setup({})
 
 vim.keymap.set("n", "<leader>.", function() pick.builtin.files() end, { desc = "Mini Pick Files" })
@@ -225,7 +254,7 @@ cmp.setup({
 })
 
 vim.diagnostic.config({
-    virtual_text = true,
+    virtual_text = { prefix = "", spacing = 2 },
     update_in_insert = false,
     virtual_lines = false,
     float = {
@@ -253,9 +282,10 @@ end
 vim.api.nvim_create_autocmd("LspAttach", {
     desc = "Configure LSP Keybinds",
     callback = function(args)
+        local bufnr = args.buf
         local client = vim.lsp.get_client_by_id(args.data.client_id)
         if not client then return end
-        on_attach(client, args.buf)
+        on_attach(client, bufnr)
     end,
 })
 
@@ -303,7 +333,6 @@ vim.keymap.set(
 local lint = require("lint")
 
 lint.linters_by_ft = {
-    markdown = { "markdownlint" },
     python = { "ruff" },
     c = { "clangtidy" },
     cpp = { "clangtidy" },
@@ -329,11 +358,17 @@ vim.g.vimtex_view_general_options = "-reuse-instance -forward-search @tex @line 
 
 vim.pack.add({ "https://github.com/MeanderingProgrammer/render-markdown.nvim" })
 
+require("render-markdown").setup({
+    latex = { enabled = false },
+    completions = { lsp = { enabled = true } },
+    html = { enabled = true, comment = { conceal = false } },
+})
+
 ----- Treesitter -----
 
 vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" })
 
-local parsers = { "python", "lua", "vimdoc", "markdown", "markdown_inline", "html", "yaml" }
+local parsers = { "python", "lua", "vimdoc", "markdown", "markdown_inline", "html", "yaml", "toml" }
 
 require("nvim-treesitter").install(parsers):wait(300000)
 
