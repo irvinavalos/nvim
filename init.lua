@@ -20,6 +20,7 @@ vim.g.loaded_node_provider = 0
 require("options")
 require("keymaps")
 require("autocmds")
+require("compile")
 
 vim.pack.add({
   "https://github.com/webhooked/kanso.nvim",
