@@ -23,8 +23,6 @@ require("autocmds")
 require("compile")
 
 vim.pack.add({
-  "https://github.com/webhooked/kanso.nvim",
-  "https://github.com/oskarnurm/koda.nvim",
   "https://github.com/vague-theme/vague.nvim",
 
   "https://github.com/nvim-mini/mini.ai",
@@ -35,7 +33,6 @@ vim.pack.add({
   "https://github.com/stevearc/oil.nvim",
 
   "https://github.com/lewis6991/gitsigns.nvim",
-  "https://github.com/lukas-reineke/indent-blankline.nvim",
 
   "https://github.com/L3MON4D3/LuaSnip",
   "https://github.com/rafamadriz/friendly-snippets",
@@ -57,21 +54,11 @@ require("vague").setup({ italic = false })
 
 vim.cmd.colorscheme("vague")
 
-local hooks = require("ibl.hooks")
-hooks.register(hooks.type.WHITESPACE, hooks.builtin.hide_first_space_indent_level)
-
-require("ibl").setup({
-  indent = {
-    char = "│",
-  },
-
-  scope = {
-    char = "│",
-    show_start = false,
-  },
-})
-
 require("mini.icons").setup({})
+package.preload["nvim-web-devicons"] = function()
+  require("mini.icons").mock_nvim_web_devicons()
+  return package.loaded["nvim-web-devicons"]
+end
 
 require("gitsigns").setup({
   gh = true,
@@ -129,7 +116,9 @@ vim.keymap.set("n", "<leader>fh", "<cmd>FzfLua help_tags<cr>", { desc = "Help" }
 vim.keymap.set("n", "<leader>fd", "<cmd>FzfLua lsp_document_diagnostics<cr>", { desc = "Diagnostics" })
 vim.keymap.set("n", "<leader>fr", "<cmd>FzfLua resume<cr>", { desc = "Resume" })
 
-require("cord").setup({})
+if not os.getenv("WAYLAND_DISPLAY") then
+  require("cord").setup({})
+end
 
 require("oil").setup({
   show_hidden = true,

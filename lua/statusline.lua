@@ -28,6 +28,11 @@ local function set_statusline_highlights()
   local diff_change_fg = get_hl("DiagnosticWarn").fg or "#e2b93d"
   local diff_remove_fg = get_hl("DiagnosticError").fg or "#ff5874"
 
+  local error_fg = get_hl("DiagnosticError").fg or "#ff5874"
+  local warn_fg = get_hl("DiagnosticWarn").fg or "#e2b93d"
+  local info_fg = get_hl("DiagnosticInfo").fg or "#88c0d0"
+  local hint_fg = get_hl("DiagnosticHint").fg or "#808080"
+
   vim.api.nvim_set_hl(0, "StatusLineModeNormal", { fg = mode_fg, bg = normal_bg, bold = true })
   vim.api.nvim_set_hl(0, "StatusLineModeInsert", { fg = mode_fg, bg = insert_bg, bold = true })
   vim.api.nvim_set_hl(0, "StatusLineModeVisual", { fg = mode_fg, bg = visual_bg, bold = true })
@@ -35,32 +40,17 @@ local function set_statusline_highlights()
   vim.api.nvim_set_hl(0, "StatusLineModeCommand", { fg = mode_fg, bg = normal_bg, bold = true })
 
   vim.api.nvim_set_hl(0, "StatusLineMedium", { fg = sl_fg, bg = sl_bg })
-  vim.api.nvim_set_hl(0, "StatusLineGitBranchIcon", { fg = git_icon_fg, bg = sl_bg })
-  vim.api.nvim_set_hl(0, "StatusLineGitDiffAdded", { fg = diff_add_fg, bg = sl_bg })
-  vim.api.nvim_set_hl(0, "StatusLineGitDiffChanged", { fg = diff_change_fg, bg = sl_bg })
-  vim.api.nvim_set_hl(0, "StatusLineGitDiffRemoved", { fg = diff_remove_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = git_icon_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineGitAdd", { fg = diff_add_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineGitChange", { fg = diff_change_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineGitRemove", { fg = diff_remove_fg, bg = sl_bg })
   vim.api.nvim_set_hl(0, "StatusLineLspMessages", { fg = dim_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = error_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = warn_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = info_fg, bg = sl_bg })
+  vim.api.nvim_set_hl(0, "StatusLineDiagHint", { fg = hint_fg, bg = sl_bg })
 
   vim.api.nvim_set_hl(0, "StatusLine", { fg = sl_fg, bg = sl_bg })
-end
-
-local function diagnostics()
-  if not rawget(vim, "lsp") then
-    return ""
-  end
-  local status = vim.diagnostic.status()
-  if status == "" then
-    return ""
-  end
-  return string.format("%%#StatusLineMedium# %s%%*", status)
-end
-
-local function git_diff(diff_type)
-  local gsd = vim.b.gitsigns_status_dict
-  if gsd and gsd[diff_type] then
-    return gsd[diff_type]
-  end
-  return 0
 end
 
 local mode_hl_map = {
@@ -80,21 +70,78 @@ local function mode()
   return string.format("%%#%s# %s %%*", hl_group, m)
 end
 
+local function filename()
+  local name = vim.fn.expand("%:t")
+  if name == "" then
+    name = "[no name]"
+  end
+  return string.format("%%#StatusLineMedium# %s%%*", name)
+end
+
+local function git_info()
+  local dict = vim.b.gitsigns_status_dict
+  if not dict then
+    return ""
+  end
+
+  local parts = {}
+  if dict.head and dict.head ~= "" then
+    table.insert(parts, string.format("|%%#StatusLineGitBranch# %s%%*", dict.head))
+  end
+  if dict.added and dict.added > 0 then
+    table.insert(parts, string.format("%%#StatusLineGitAdd#+%d%%*", dict.added))
+  end
+  if dict.changed and dict.changed > 0 then
+    table.insert(parts, string.format("%%#StatusLineGitChange#~%d%%*", dict.changed))
+  end
+  if dict.removed and dict.removed > 0 then
+    table.insert(parts, string.format("%%#StatusLineGitRemove#-%d%%*", dict.removed))
+  end
+
+  if #parts == 0 then
+    return ""
+  end
+  return "%#StatusLineMedium# %*" .. table.concat(parts, " ") .. " "
+end
+
+local function diagnostics()
+  local counts = vim.diagnostic.count(0)
+  local parts = {}
+
+  local errors = counts[vim.diagnostic.severity.ERROR] or 0
+  local warnings = counts[vim.diagnostic.severity.WARN] or 0
+  local info = counts[vim.diagnostic.severity.INFO] or 0
+  local hints = counts[vim.diagnostic.severity.HINT] or 0
+
+  if errors > 0 then
+    table.insert(parts, string.format("%%#StatusLineDiagError# %d%%*", errors))
+  end
+  if warnings > 0 then
+    table.insert(parts, string.format("%%#StatusLineDiagWarn# %d%%*", warnings))
+  end
+  if info > 0 then
+    table.insert(parts, string.format("%%#StatusLineDiagInfo# %d%%*", info))
+  end
+  if hints > 0 then
+    table.insert(parts, string.format("%%#StatusLineDiagHint# %d%%*", hints))
+  end
+
+  if #parts == 0 then
+    return ""
+  end
+  return table.concat(parts, " ") .. " "
+end
+
 local function python_env()
   local venv = os.getenv("VIRTUAL_ENV_PROMPT")
-
   if not venv then
     local path = os.getenv("VIRTUAL_ENV")
-
     if not path then
       return ""
     end
-
     venv = vim.fn.fnamemodify(path, ":t")
   end
-
   local venv_str = string.gsub(venv, "%s+", "")
-
   return string.format("%%#StatusLineMedium# (%s)%%*", venv_str)
 end
 
@@ -102,33 +149,14 @@ local function lsp_active()
   if not rawget(vim, "lsp") then
     return ""
   end
+
   local curr_buf = vim.api.nvim_get_current_buf()
   local clients = vim.lsp.get_clients({ bufnr = curr_buf })
-  local space = "%#StatusLineMedium# %*"
+
   if #clients > 0 then
-    return space .. "%#StatusLineMedium#LSP%* "
+    return "%#StatusLineMedium# lsp+ |%*"
   end
   return ""
-end
-
-local function filetype()
-  local ft = vim.bo.filetype
-  if ft == "" then
-    return ""
-  end
-
-  local icon, icon_hl = require("mini.icons").get("filetype", ft)
-
-  if icon_hl then
-    local fg = vim.api.nvim_get_hl(0, { name = icon_hl, link = false })
-    if fg.fg then
-      local sl_bg = get_hl("Normal").bg or "#1c1c1c"
-      vim.api.nvim_set_hl(0, "StatusLine" .. icon_hl, { fg = ("#%06x"):format(fg.fg), bg = sl_bg })
-      return string.format("%%#StatusLine%s#%s  %%#StatusLineMedium#%s%%*", icon_hl, icon, ft)
-    end
-  end
-
-  return string.format("%%#StatusLineMedium#%s%%*", ft)
 end
 
 local lsp_progress = { client = nil, kind = nil, title = nil, percentage = nil, message = nil }
@@ -144,7 +172,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 
 vim.api.nvim_create_autocmd("LspProgress", {
   group = statusline_augroup,
-  desc = "Update LSP progress bar in statusline",
+  desc = "Update LSP progress in statusline",
   pattern = { "begin", "report", "end" },
   callback = function(args)
     if not (args.data and args.data.client_id) then
@@ -190,81 +218,9 @@ local function lsp_status()
   return string.format("%%#StatusLineLspMessages#%s%%* ", lsp_message)
 end
 
-local function git_diff_added()
-  local added = git_diff("added")
-  if added > 0 then
-    return string.format("%%#StatusLineGitDiffAdded#+%s%%*", added)
-  end
-  return ""
-end
-
-local function git_diff_changed()
-  local changed = git_diff("changed")
-  if changed > 0 then
-    return string.format("%%#StatusLineGitDiffChanged#~%s%%*", changed)
-  end
-  return ""
-end
-
-local function git_diff_removed()
-  local removed = git_diff("removed")
-  if removed > 0 then
-    return string.format("%%#StatusLineGitDiffRemoved#-%s%%*", removed)
-  end
-  return ""
-end
-
-local function git_branch_icon()
-  return "%#StatusLineGitBranchIcon#\239\144\152%*"
-end
-
-local function git_branch()
-  local branch = vim.b.gitsigns_head
-  if branch == "" or branch == nil then
-    return ""
-  end
-  return string.format("%%#StatusLineMedium#%s%%*", branch)
-end
-
-local function full_git()
-  local full = ""
-  local space = "%#StatusLineMedium# %*"
-  local branch = git_branch()
-  if branch ~= "" then
-    local icon = git_branch_icon()
-    full = full .. space .. icon .. space .. branch .. space
-  end
-  local added = git_diff_added()
-  if added ~= "" then
-    full = full .. added .. space
-  end
-  local changed = git_diff_changed()
-  if changed ~= "" then
-    full = full .. changed .. space
-  end
-  local removed = git_diff_removed()
-  if removed ~= "" then
-    full = full .. removed .. space
-  end
-  return full
-end
-
-local function file_percentage()
-  local curr_line = vim.api.nvim_win_get_cursor(0)[1]
-  local lines = vim.api.nvim_buf_line_count(0)
-  return string.format("%%#StatusLineMedium# \238\152\146 %d%%%% %%*", math.ceil((curr_line / lines) * 100))
-end
-
-local function total_lines()
-  local lines = vim.fn.line("$")
-  return string.format("%%#StatusLineMedium#of %s %%*", lines)
-end
-
 local function cursor_position()
   local pos = vim.api.nvim_win_get_cursor(0)
-  local line = pos[1]
-  local col = pos[2] + 1
-  return string.format("%%#StatusLineMedium# %d:%d %%*", line, col)
+  return string.format("%%#StatusLineMedium# 󰍒 %d:%d %%*", pos[1], pos[2] + 1)
 end
 
 local function formatted_filetype(hlgroup)
@@ -272,14 +228,7 @@ local function formatted_filetype(hlgroup)
   return string.format("%%#%s# %s %%*", hlgroup, file_type)
 end
 
-local function filename()
-  local name = vim.fn.expand("%:t")
-  if name == "" then
-    name = "[No Name]"
-  end
-  return string.format("%%#StatusLineMedium# %s %%*", name)
-end
-
+---@class StatusLine
 StatusLine = {}
 
 local readable_filetypes = { qf = true, help = true }
@@ -296,34 +245,26 @@ function StatusLine.active()
       mode(),
       "%=",
       "%=",
-      file_percentage(),
-      total_lines(),
     })
   elseif readable_filetypes[vim.bo.filetype] or vim.o.modifiable == false then
     return table.concat({
       formatted_filetype("StatusLineMode"),
       "%=",
       "%=",
-      file_percentage(),
-      total_lines(),
     })
   end
 
   return table.concat({
     mode(),
     filename(),
-    full_git(),
+    git_info(),
     "%=",
     "%=",
-    "%S",
     lsp_status(),
     diagnostics(),
     lsp_active(),
-    filetype(),
-    cursor_position(),
-    file_percentage(),
-    total_lines(),
     python_env(),
+    cursor_position(),
   })
 end
 
